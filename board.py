@@ -4,6 +4,8 @@ from collections import deque
 
 import attr
 
+from funcs import update_group
+
 
 class Direction(Enum):
     up = 0
@@ -20,6 +22,26 @@ class Direction(Enum):
                         Direction.right,
                         Direction.down_right,
                         Direction.down]
+
+
+class Axis(Enum):
+    vertical = 0
+    horizontal = 1
+    upwards_diagonal = 2
+    downwards_diagonal = 3
+
+    def get_directions(self) -> tuple[Direction, Direction]:
+        directions = {
+            Axis.vertical: (Direction.up, Direction.down),
+            Axis.horizontal: (Direction.right, Direction.left),
+            Axis.upwards_diagonal: (Direction.up_right, Direction.down_left),
+            Axis.downwards_diagonal: (Direction.down_right, Direction.up_left)
+        }
+        return directions[self]
+
+    @staticmethod
+    def all_axes() -> list['Axis']:
+        return [Axis.vertical, Axis.horizontal, Axis.upwards_diagonal, Axis.downwards_diagonal]
 
 
 @attr.s(auto_attribs=True)
@@ -78,41 +100,46 @@ class Board:
         column = index - row * self.rows
         return row, column
 
-    def get_connections(self, mark: int) -> list[list[int]]:
+    def get_board_value(self, mark: int):
+        connections = self.find_connections(mark)
+        value = 0
+        for connection in connections:
+            pass
+
+    def find_connections(self, mark: int) -> dict[Axis, set[list[int]]]:
         """
         returns a list of indexes which are connections of a player (specified
-        by mark)
+        by mark), grouped by axis
         """
         assert mark in [1, 2]
 
-        connections = []
-        values_to_check = deque(range(len(self.board)))
-        while len(values_to_check):
-            value = values_to_check.pop()
+        connections = {
+            Axis.vertical: [],
+            Axis.horizontal: [],
+            Axis.upwards_diagonal: [],
+            Axis.downwards_diagonal: []
+        }
+        for value in range(len(self.board)):
             if self.board[value] != mark:
                 continue
 
-            connections_for_value = [
-                self._find_connection_on_axis(Direction.down, Direction.up, value, mark),
-                self._find_connection_on_axis(Direction.left, Direction.right, value, mark),
-                self._find_connection_on_axis(Direction.up_right, Direction.down_left, value, mark),
-                self._find_connection_on_axis(Direction.up_left, Direction.down_right, value, mark)
-            ]
-            connections += [connection for connection in connections_for_value if
-                            len(connection) > 1 and connection not in connections]
+            for axis in Axis.all_axes():
+                connection = self._find_connection_on_axis(axis, value, mark)
+                if len(connection) > 1:
+                    connections = update_group(connections, axis, connection)
 
         return connections
 
     def _find_connection_on_axis(
             self,
-            pos_axis: Direction,
-            neg_axis: Direction,
+            axis: Axis,
             value: int,
             mark: int
-    ) -> list[int] | None:
+    ) -> list[int]:
         connection = deque([value])
-        connection = self._find_connection_in_one_direction(value, pos_axis, connection, mark)
-        connection = self._find_connection_in_one_direction(value, neg_axis, connection, mark)
+        pos_direction, neg_direction = axis.get_directions()
+        connection = self._find_connection_in_one_direction(value, pos_direction, connection, mark)
+        connection = self._find_connection_in_one_direction(value, neg_direction, connection, mark)
         return list(connection)
 
     def _find_connection_in_one_direction(
@@ -162,9 +189,9 @@ class BoardTest(unittest.TestCase):
 
     def test_get_value_at(self):
         board = Board.parse_from_nested_list(
-            [[0, 0, 0], # [[0, 1, 2]
-             [1, 0, 0], #  [3, 4, 5]
-             [0, 0, 2]] #  [6, 7, 8]]
+            [[0, 0, 0],  # [[0, 1, 2]
+             [1, 0, 0],  # [3, 4, 5]
+             [0, 0, 2]]  # [6, 7, 8]]
         )
         self.assertEqual(board.get_value_at(1, 0), 1)
         self.assertEqual(board.get_value_at(0, 0), 0)
@@ -173,8 +200,8 @@ class BoardTest(unittest.TestCase):
     def test_get_row_and_column_at(self):
         board = Board.parse_from_nested_list(
             [[0, 0, 0],  # [[0, 1, 2]
-             [1, 0, 0],  #  [3, 4, 5]
-             [0, 0, 2]]  #  [6, 7, 8]]
+             [1, 0, 0],  # [3, 4, 5]
+             [0, 0, 2]]  # [6, 7, 8]]
         )
         self.assertEqual(board.get_row_and_col_at(3), (1, 0))
         self.assertEqual(board.get_row_and_col_at(0), (0, 0))
@@ -197,21 +224,29 @@ class BoardTest(unittest.TestCase):
              [1, 2, 1, 2],  # [08, 09, 10, 11],
              [1, 2, 2, 1]]  # [12, 13, 14, 15]]
         )
-        connections_mark_1 = [
-            [4, 8, 12],  # vertical
-            [4, 5],  # horizontal
-            [8, 5],  # upwards diagonal
-            [5, 10, 15]  # downwards diagonal
-        ]
+        connections_mark_1 = {
+            Axis.vertical: [[4, 8, 12]],
+            Axis.horizontal: [[4, 5]],
+            Axis.upwards_diagonal: [[8, 5]],
+            Axis.downwards_diagonal: [[5, 10, 15]]
+        }
 
-        connections_mark_2 = [
-            [9, 13], [13, 14],  # vertical
-            [9, 6], [14, 11],  # upwards diagonal
-            [9, 14], [6, 11]  # downwards diagonal
-        ]
+        connections_mark_2 = {
+            Axis.horizontal: [[13, 14]],
+            Axis.vertical: [[9, 13]],
+            Axis.upwards_diagonal: [[9, 6], [14, 11]],
+            Axis.downwards_diagonal: [[9, 14], [6, 11]]
+        }
 
-        self.assertEqual(sorted(connections_mark_1), sorted(board_with_connections.get_connections(1)))
-        self.assertEqual(sorted(connections_mark_2), sorted(board_with_connections.get_connections(2)))
+        for axis in Axis.all_axes():
+            self.assertEqual(
+                sorted(connections_mark_1[axis]),
+                sorted(board_with_connections.find_connections(1)[axis])
+            )
+            self.assertEqual(
+                sorted(connections_mark_2[axis]),
+                sorted(board_with_connections.find_connections(2)[axis])
+            )
 
     def test_parse_board(self):
         board = [[0, 0, 0],
@@ -224,8 +259,8 @@ class BoardTest(unittest.TestCase):
     def test_get_neighbor_index(self):
         board = Board.parse_from_nested_list(
             [[0, 0, 0],  # [[0, 1, 2]
-             [0, 0, 0],  #  [3, 4, 5]
-             [0, 0, 0]]  #  [6, 7, 8]]
+             [0, 0, 0],  # [3, 4, 5]
+             [0, 0, 0]]  # [6, 7, 8]]
         )
         self.assertEqual(1, board.get_neighbor_index(4, Direction.up))
         self.assertEqual(2, board.get_neighbor_index(4, Direction.up_right))

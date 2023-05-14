@@ -1,26 +1,21 @@
 import unittest
+from typing import TypeVar
 
 from data_structures import Observation, Configuration
 
+K = TypeVar('K')
+V = TypeVar('V')
 
-def down(index: int) -> int | None:
-    pass
 
-def get_connections(
-        board: list[int],
-        mark: int
-) -> list[list[int]]:
-    connections = []
-    board = observation.board
-    # floodfill algorithm starting to search for
-    for i in range(len(observation.board)):
-        if board[i] != mark:
-            continue
-        # search for connections vertically
-        vertical_connection = [i]
-        search_queue = [i]
-        if d := down(i):
-            pass
+def update_group(grouping: dict[K, list[list[V]]], group: K, update: list[V]) \
+        -> dict[K, list[list[V]]]:
+    assert group in grouping, f"missing group {group} in grouping {grouping} "
+    values = grouping[group]
+    if update not in values:
+        updated_values = values + [update]
+        grouping[group] = updated_values
+    return grouping
+
 
 
 def get_board_value(
@@ -43,6 +38,3 @@ def get_board_value(
         3 / 6 * blocked_size_three_connections,
         5 / 6 * blocked_size_four_connections,
     ])
-
-
-
