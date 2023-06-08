@@ -14,4 +14,4 @@ def get_board_value(board: Board, mark: int) -> float:
     pass
 
 def get_pattern_for_connection(connection: list[int]) -> Pattern:
-    
+    pass

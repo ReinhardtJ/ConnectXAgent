@@ -71,7 +71,7 @@ def find_blocked_opponent_connections(board: Board, mark: int) -> dict[TAxis, li
 def connection_is_blocked(board: Board, connection: list[int], axis: TAxis, mark: int) \
         -> bool:
     """returns if the connection of the opponent of the player specified with mark
-    is blocked by at least one bead from the player specified with mark"""
+    is blocked by at least one piece from the player specified with mark"""
     positive_neighbor_index = axis.positive_direction().get_neighbor_index(board, connection[-1])
     negative_neighbor_index = axis.negative_direction().get_neighbor_index(board, connection[0])
 

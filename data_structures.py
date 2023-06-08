@@ -13,7 +13,7 @@ class PositionState(int, Enum):
 class Observation:
     board: list[int]  # flattened rows x cols, starting top left
     step: int
-    mark: int  # the label of our beads
+    mark: int  # the label of our pieces
 
 
 @attr.s(auto_attribs=True)

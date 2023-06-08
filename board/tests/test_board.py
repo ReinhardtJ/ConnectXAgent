@@ -1,6 +1,6 @@
 import unittest
 
-from board.interaction import add_bead
+from board.interaction import add_piece
 from board.navigation import get_value_at, get_row_and_col_at, get_index_at, Up, UpRight, Right, \
     DownRight, Down, DownLeft, Left, UpLeft, DownwardsDiagonal, UpwardsDiagonal, Horizontal, Vertical, TAxis, \
     all_axes
@@ -116,14 +116,14 @@ class TestBoard(unittest.TestCase):
         self.assertEqual(get_board_value(board, 1), value_table[2])
         self.assertEqual(get_board_value(board, 2), 0)
 
-    def test_add_bead(self):
+    def test_add_piece(self):
         board = parse_board(
             [[1, 0, 0],  # [[0, 1, 2]
              [2, 0, 0],  # [3, 4, 5]
              [1, 0, 0]]  # [6, 7, 8]]
         )
 
-        self.assertRaises(AssertionError, lambda: add_bead(board, 2, 0))
+        self.assertRaises(AssertionError, lambda: add_piece(board, 2, 0))
 
         board = parse_board(
             [[0, 0, 0],  # [[0, 1, 2]
@@ -136,7 +136,7 @@ class TestBoard(unittest.TestCase):
              [1, 1, 0]]  # [6, 7, 8]]
         )
 
-        add_bead(board, 1, 1)
+        add_piece(board, 1, 1)
         self.assertEqual(board, expected_board)
 
 

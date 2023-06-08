@@ -6,7 +6,7 @@ class Board:
     """
     This class wraps the original data structure representing the board, which
     is a list of integers ∈ {0, 1, 2} representing either an empty cell (0),
-    a bead from player 1 (1) or a bead from player 2 (2).
+    a piece from player 1 (1) or a piece from player 2 (2).
 
     The regular size of the board is 7 rows x 6 columns, but those values are
     parametrized, but won't change during the game.
@@ -26,4 +26,10 @@ class Board:
     board: list[int]
     rows: int
     columns: int
+
+    def __getitem__(self, item):
+        return self.board[item]
+
+    def __len__(self):
+        return len(self.board)
 
