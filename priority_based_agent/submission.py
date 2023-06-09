@@ -467,7 +467,6 @@ def get_4_tuple_from_index(board: Board, index: int, axis: TAxis, mark: int) -> 
 def get_best_4_tuple(board: Board, with_index: int, mark: int) -> PriorityResult:
     current_best_result = PriorityResult(Priority.none, FourTuple(-1, -1, -1, -1), FourTuple(-1, -1, -1, -1))
     for axis in all_axes():
-        print(f'axis: {axis}')
         for index in range(len(board.board)):
             result = get_4_tuple_from_index(board, index, axis, mark)
             # skip when the currently examined tuple does not contain the newly added piece
@@ -477,13 +476,10 @@ def get_best_4_tuple(board: Board, with_index: int, mark: int) -> PriorityResult
 
             # early-return when we can connect 4
             if result.priority == Priority.connect_4:
-                print(f'found winning 4-tuple {result.four_tuple} at indexes {result.tuple_indexes}')
                 return result
 
             # track the best tuple we found so far
             if result.priority < current_best_result.priority:
-                print(
-                    f'{result.four_tuple} at indexes {result.tuple_indexes} wins against {current_best_result.four_tuple} at indexes {current_best_result.tuple_indexes}')
                 current_best_result = result
 
     return current_best_result
@@ -523,14 +519,12 @@ def add_piece(board: Board, mark: int, column: int) -> int:
 
 
 def act(observation: Observation, configuration: Configuration):
-    print(f'state from [{observation.step + 1}] -> [{observation.step + 2}]\n')
     board = Board(observation.board, configuration.rows, configuration.columns)
     our_mark = observation.mark
 
     current_best_priority = Priority.none
     current_best_col = -1
     for column in range(board.columns):
-        print(f'column: {column}')
         next_state_board = copy.deepcopy(board)
         try:
             added_piece_index = add_piece(next_state_board, our_mark, column)
@@ -544,6 +538,4 @@ def act(observation: Observation, configuration: Configuration):
         if result.priority < current_best_priority:
             current_best_priority = result.priority
             current_best_col = column
-        print('')
-    print('-------------------\n')
     return current_best_col
