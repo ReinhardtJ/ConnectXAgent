@@ -1,7 +1,7 @@
-import attr
+from dataclasses import dataclass
 
 
-@attr.s(auto_attribs=True)
+@dataclass
 class Board:
     """
     This class wraps the original data structure representing the board, which

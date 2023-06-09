@@ -1,5 +1,4 @@
 import copy
-from enum import Enum
 
 from board.board_class import Board
 from board.interaction import add_piece
